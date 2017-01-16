@@ -1,8 +1,10 @@
 # CameraNode
-Description:
+## Description
 
-How to build:
+## How to build
+```
 $ mkdir build
 $ cmake ..
+```
 
-How to run:
+## How to run
