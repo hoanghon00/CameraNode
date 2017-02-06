@@ -24,78 +24,50 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    /*Initialization*/
-    FaceDetection fd(argv[1]);
-    Mat frame, result;
-    vector<Rect> faces;
+	FaceDetection fd(argv[1]);
+	NoseDetection nd(argv[2]);
 
-    /* Initialize nose detection*/
-    NoseDetection nd(argv[2]);
-
-    /*Read training and init Person Recognizer*/
+	/*Read training and init Person Recognizer*/
     vector<Mat>  training_set;
     vector<int> labels;
     read_csv(argv[3], training_set, labels);
     //Create personal recognizer
     PersonRecognizer pr(training_set, labels);
 
-    /*Initialize pedestrian detection*/
-    PedestrianDetection pd;
-    vector<Rect> pedestrians;
-#if 0
-    Mat testImg = imread("./person_010.bmp");
-    pd.detect(testImg, pedestrians);
-    for( size_t i = 0; i < pedestrians.size(); i++ ) {
-        //draw detection image
-        rectangle(testImg, pedestrians[i], Scalar(255, 0 ,0), 2);
-    }
-    imshow("Pedestrian detection test", testImg);
-#endif
-    namedWindow("Camera Node", WINDOW_AUTOSIZE);
     string outFile = "/mnt/RAM_disk/out.mjpg";
-    VideoCapture cap;
-    cap.open(0);
 
-    if (cap.isOpened()) {
-        while (1) {
-            /*Get frame from camera*/
-            cap >> frame;
-            /* Resize to reduce computation*/
-            resize(frame, frame, Size(), 0.5, 0.5, INTER_AREA);
-            result = frame;
-            if (!frame.data) {
-                cerr << "No data" << endl;
-                break;
-            }
-
-            /* Detect pedestrian*/
-            pd.detect(frame, pedestrians);
-            for( size_t i = 0; i < pedestrians.size(); i++ ) {
-                //draw detection image
-                rectangle(result, pedestrians[i], Scalar(255, 0 ,0), 2);
-            }
-
-            /*Detect face*/
-            fd.detectFaces(frame, faces);
-            processDetectedFaces(frame, result, faces, pr, nd);
-
-            /*Show result*/
-            imshow("Camera Node", result);
-            VideoWriter outStream(outFile, CV_FOURCC('M','J','P','G'), 10, Size(320, 240));
-            if (outStream.isOpened()) {
-                outStream.write(result);
-            } else {
-                cout << "Cannot write to file" << endl;
-            }
-
-            if(waitKey(1) >= 0) {
-                break;
-            }
-        }
-    } else {
-        cerr << "Can not open camera" << endl;
+	VideoCapture cap(0);
+	if(!cap.isOpened()) {
+        cerr << "Capture Device ID " << 0 << "cannot be opened." << endl;
+        return -1;
     }
 
+    Mat frame;
+    vector<Rect> faces;
+
+    for(;;) {
+        cap >> frame;
+        // Clone the current frame:
+        Mat original = frame.clone();
+
+		/*Detect face*/
+		fd.detectFaces(frame, faces);
+		processDetectedFaces(frame, original, faces, pr, nd);
+
+        // Show the result and write out the for streamer
+        imshow("Camera Node", original);
+        VideoWriter outStream(outFile, CV_FOURCC('M','J','P','G'), 10, original.size());
+		if (outStream.isOpened()) {
+			outStream.write(original);
+		} else {
+			cout << "Cannot write to file" << endl;
+		}
+        // And display it:
+        char key = (char) waitKey(20);
+        // Exit this loop on escape:
+        if(key == 27)
+            break;
+    }
     return 0;
 }
 
