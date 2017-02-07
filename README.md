@@ -30,11 +30,12 @@ $ sudo ln -sf <absolute_link_to_resource_dir> /opt/CameraNode
 ```
 Export the location of face cascade, nose cascade and person training csv file path in resource folder.
 ```
-export FACE_CASCADE=
-export NOSE_CASCADE=<nose_cascade_location>
-export CSV_FILEPATH=<csv_filepath>
+export FACE_CASCADE=/opt/CameraNode/haarcascade_frontalface_default.xml
+export NOSE_CASCADE=/opt/CameraNode/haarcascade_mcs_nose.xml
+export CSV_FILEPATH=/opt/CameraNode/faces.csv
 ```
-Run the CameraNode
+And copy these lines into **~/.bashrc**
+###Run the CameraNode
 ```
 $ CameraNode ${FACE_CASCADE} ${NOSE_CASCADE} ${CSV_FILEPATH}
 ```
