@@ -9,7 +9,8 @@ $ cmake ..
 $ make
 ```
 
-## How to run
+## How to configure system and run application
+### Create RAM disk for streamer server
 Fisrt, create a RAM disk to store output of program
 ```
 $ sudo mkdir /mnt/RAM_disk
@@ -22,15 +23,14 @@ To create a RAM disk automatically after every time system boot up, add an entry
 ```
 tmpfs       /mnt/RAM_disk tmpfs   nodev,nosuid,noexec,nodiratime,size=2M   0 0
 ```
-
-Copy all resources to /opt directory
+### Prepare resouces for application
+Link all resources to /opt directory
 ```
-$ sudo mkdir /opt/CameraNode
-$ sudo cp -rf resource/faces /opt/
+$ sudo ln -sf <absolute_link_to_resource_dir> /opt/CameraNode
 ```
-Export the absolute location of face cascade, nose cascade and person training csv file path in resource folder.
+Export the location of face cascade, nose cascade and person training csv file path in resource folder.
 ```
-export FACE_CASCADE=<face_cascade_location>
+export FACE_CASCADE=
 export NOSE_CASCADE=<nose_cascade_location>
 export CSV_FILEPATH=<csv_filepath>
 ```
