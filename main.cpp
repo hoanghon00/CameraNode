@@ -110,7 +110,13 @@ static void read_csv(const string& filename, vector<Mat>& images, vector<int>& l
         getline(liness, path, ';');
         getline(liness, classlabel);
         if(!path.empty() && !classlabel.empty()) {
-            images.push_back(imread(path, 0));
+			Mat training_img;
+			training_img = imread(path, 0);
+			if ( !training_img.data) {
+				cout << "Could not open or find the training image at location: " << path << endl;
+				exit(EXIT_FAILURE);
+			}
+            images.push_back(training_img);
             labels.push_back(atoi(classlabel.c_str()));
         }
     }
