@@ -1,0 +1,9 @@
+[Unit]
+Description=MJPG Streamer Daemon
+After=rc.local.service
+
+[Service]
+ExecStart=/usr/bin/mjpg_streamer -i "input_file.so -f /mnt/RAM_disk" -o "/usr/lib/output_http.so -p 8090 -w 362 /var/www/mjpg_streamer"
+
+[Install]
+WantedBy=multi-user.target

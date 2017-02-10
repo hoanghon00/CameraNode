@@ -1,0 +1,9 @@
+[Unit]
+Description=Camera Node Service
+
+[Service]
+EnvironmentFile=/etc/CameraNode/CameraNode.conf
+ExecStart=/opt/CameraNode/CameraNode $FACE_CASCADE $NOSE_CASCADE $CSV_FILEPATH
+
+[Install]
+WantedBy=default.target
