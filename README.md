@@ -39,3 +39,22 @@ And copy these lines into **~/.bashrc**
 ```
 $ CameraNode ${FACE_CASCADE} ${NOSE_CASCADE} ${CSV_FILEPATH}
 ```
+## CameraNode with systemd
+To start mjpg-streamer and CameraNode application automatically when system start up, we create systemd services to complete this task.
+These service stored in systemd folder.
+### mjpg-streamer
+```
+$ sudo cp mjpg-streamerd.service /etc/systemd/system/mjpg-streamerd.service
+$ sudo systemctl daemon-reload
+$ sudo systemctl start mjpg-streamerd
+$ sudo systemctl enable mjpg-streamerd
+```
+### CameraNode application
+```
+$ sudo mkdir /etc/CameraNode
+$ sudo cp CameraNode.conf /etc/CameraNode/CameraNode.conf
+$ sudo cp camera-node.service /usr/lib/systemd/user/camera-node.service
+$ sudo systemctl daemon-reload
+$ systemctl --user start camera-node
+$ systemctl --user enable camera-node
+```
