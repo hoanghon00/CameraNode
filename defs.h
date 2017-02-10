@@ -54,4 +54,7 @@
 #define LBPH_GRID_Y    8
 #define LBPH_THR        123.0
 
+/** Application configuration **/
+#define APP_CONFIG_HOST_DISPLAY	1
+
 #endif // DEFS_H

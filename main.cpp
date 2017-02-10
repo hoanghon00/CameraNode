@@ -58,13 +58,14 @@ int main(int argc, char *argv[])
 		} else {
 			cout << "Cannot write to file" << endl;
 		}
-
+#if APP_CONFIG_HOST_DISPLAY
 		imshow("Camera Node", original);
 		// And display it:
         char key = (char) waitKey(20);
         // Exit this loop on escape:
         if(key == 27)
             break;
+#endif
     }
     return 0;
 }
