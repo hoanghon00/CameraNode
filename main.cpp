@@ -27,14 +27,11 @@ int main(int argc, char *argv[])
 	FaceDetection fd(argv[1]);
 	NoseDetection nd(argv[2]);
 
-	/*Read training and init Person Recognizer*/
+	/* Read training and init Person Recognizer */
     vector<Mat>  training_set;
     vector<int> labels;
     read_csv(argv[3], training_set, labels);
-    //Create personal recognizer
     PersonRecognizer pr(training_set, labels);
-
-    string outFile = "/mnt/RAM_disk/out.mjpg";
 
 	VideoCapture cap(0);
 	if(!cap.isOpened()) {
@@ -47,22 +44,23 @@ int main(int argc, char *argv[])
 
     for(;;) {
         cap >> frame;
-        // Clone the current frame:
+        /* Clone the current frame */
         Mat original = frame.clone();
 
-		/*Detect face*/
+		/* Detect face */
 		fd.detectFaces(frame, faces);
 		processDetectedFaces(frame, original, faces, pr, nd);
 
-        // Show the result and write out the for streamer
-        imshow("Camera Node", original);
-        VideoWriter outStream(outFile, CV_FOURCC('M','J','P','G'), 10, original.size());
+        /* Show the result and write out the for streamer */
+        VideoWriter outStream(OUT_FILE, OUT_FOURCC, OUT_FPS, original.size());
 		if (outStream.isOpened()) {
 			outStream.write(original);
 		} else {
 			cout << "Cannot write to file" << endl;
 		}
-        // And display it:
+
+		imshow("Camera Node", original);
+		// And display it:
         char key = (char) waitKey(20);
         // Exit this loop on escape:
         if(key == 27)

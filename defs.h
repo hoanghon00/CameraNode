@@ -22,6 +22,7 @@
 #define CSV_FILE "1.csv"
 
 /** Output video: **/
+#define OUT_FILE	"/mnt/RAM_disk/out.mjpg"
 #define OUT_FPS    15
 #define OUT_FOURCC CV_FOURCC('M','J','P','G') //codec
 
