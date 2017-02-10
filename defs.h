@@ -22,6 +22,7 @@
 #define CSV_FILE "1.csv"
 
 /** Output video: **/
+#define OUT_FILE	"/mnt/RAM_disk/out.mjpg"
 #define OUT_FPS    15
 #define OUT_FOURCC CV_FOURCC('M','J','P','G') //codec
 
@@ -52,5 +53,8 @@
 #define LBPH_GRID_X    8
 #define LBPH_GRID_Y    8
 #define LBPH_THR        123.0
+
+/** Application configuration **/
+#define APP_CONFIG_HOST_DISPLAY	1
 
 #endif // DEFS_H

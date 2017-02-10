@@ -18,7 +18,7 @@ public:
     virtual ~PersonRecognizer();
     void recognize(const Mat &face, int &label, double &confidence) const;
 private:
-    Ptr<BasicFaceRecognizer> _model;
+    Ptr<LBPHFaceRecognizer> _model;
     Size _faceSize;
 };
 

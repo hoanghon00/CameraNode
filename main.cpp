@@ -24,78 +24,49 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    /*Initialization*/
-    FaceDetection fd(argv[1]);
-    Mat frame, result;
-    vector<Rect> faces;
+	FaceDetection fd(argv[1]);
+	NoseDetection nd(argv[2]);
 
-    /* Initialize nose detection*/
-    NoseDetection nd(argv[2]);
-
-    /*Read training and init Person Recognizer*/
+	/* Read training and init Person Recognizer */
     vector<Mat>  training_set;
     vector<int> labels;
     read_csv(argv[3], training_set, labels);
-    //Create personal recognizer
     PersonRecognizer pr(training_set, labels);
 
-    /*Initialize pedestrian detection*/
-    PedestrianDetection pd;
-    vector<Rect> pedestrians;
-#if 0
-    Mat testImg = imread("./person_010.bmp");
-    pd.detect(testImg, pedestrians);
-    for( size_t i = 0; i < pedestrians.size(); i++ ) {
-        //draw detection image
-        rectangle(testImg, pedestrians[i], Scalar(255, 0 ,0), 2);
+	VideoCapture cap(0);
+	if(!cap.isOpened()) {
+        cerr << "Capture Device ID " << 0 << "cannot be opened." << endl;
+        return -1;
     }
-    imshow("Pedestrian detection test", testImg);
+
+    Mat frame, original;
+    vector<Rect> faces;
+
+    for(;;) {
+        cap >> frame;
+        /* Clone the current frame */
+        original = frame.clone();
+
+		/* Detect face */
+		fd.detectFaces(frame, faces);
+		processDetectedFaces(frame, original, faces, pr, nd);
+
+        /* Show the result and write out the for streamer */
+        VideoWriter outStream(OUT_FILE, OUT_FOURCC, OUT_FPS, original.size());
+		if (outStream.isOpened()) {
+			outStream.write(original);
+		} else {
+			cout << "Cannot write to file" << endl;
+		}
+#if APP_CONFIG_HOST_DISPLAY
+		imshow("Camera Node", original);
+		// And display it:
+        char key = (char) waitKey(20);
+        // Exit this loop on escape:
+        if(key == 27)
+            break;
 #endif
-    namedWindow("Camera Node", WINDOW_AUTOSIZE);
-    string outFile = "/mnt/RAM_disk/out.mjpg";
-    VideoCapture cap;
-    cap.open(0);
-
-    if (cap.isOpened()) {
-        while (1) {
-            /*Get frame from camera*/
-            cap >> frame;
-            /* Resize to reduce computation*/
-            resize(frame, frame, Size(), 0.5, 0.5, INTER_AREA);
-            result = frame;
-            if (!frame.data) {
-                cerr << "No data" << endl;
-                break;
-            }
-
-            /* Detect pedestrian*/
-            pd.detect(frame, pedestrians);
-            for( size_t i = 0; i < pedestrians.size(); i++ ) {
-                //draw detection image
-                rectangle(result, pedestrians[i], Scalar(255, 0 ,0), 2);
-            }
-
-            /*Detect face*/
-            fd.detectFaces(frame, faces);
-            processDetectedFaces(frame, result, faces, pr, nd);
-
-            /*Show result*/
-            imshow("Camera Node", result);
-            VideoWriter outStream(outFile, CV_FOURCC('M','J','P','G'), 10, Size(320, 240));
-            if (outStream.isOpened()) {
-                outStream.write(result);
-            } else {
-                cout << "Cannot write to file" << endl;
-            }
-
-            if(waitKey(1) >= 0) {
-                break;
-            }
-        }
-    } else {
-        cerr << "Can not open camera" << endl;
     }
-
     return 0;
 }
 
@@ -116,7 +87,7 @@ static void processDetectedFaces(Mat &frame, Mat &result, vector<Rect> &faces, P
 
             //try to recognize the face
             pr.recognize(face_img, label, confidence);
-            cout << "Recognize with confidence: " << confidence << "and id: " << label << endl;
+            cout << "Recognize with confidence: " << confidence << " and id: " << label << endl;
             if (confidence < RECOGNIZE_THRESHOLD) {
                 color = MATCH_COLOR;
             }
@@ -140,7 +111,13 @@ static void read_csv(const string& filename, vector<Mat>& images, vector<int>& l
         getline(liness, path, ';');
         getline(liness, classlabel);
         if(!path.empty() && !classlabel.empty()) {
-            images.push_back(imread(path, 0));
+			Mat training_img;
+			training_img = imread(path, 0);
+			if ( !training_img.data) {
+				cout << "Could not open or find the training image at location: " << path << endl;
+				exit(EXIT_FAILURE);
+			}
+            images.push_back(training_img);
             labels.push_back(atoi(classlabel.c_str()));
         }
     }
