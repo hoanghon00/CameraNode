@@ -39,13 +39,13 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    Mat frame;
+    Mat frame, original;
     vector<Rect> faces;
 
     for(;;) {
         cap >> frame;
         /* Clone the current frame */
-        Mat original = frame.clone();
+        original = frame.clone();
 
 		/* Detect face */
 		fd.detectFaces(frame, faces);
@@ -87,7 +87,7 @@ static void processDetectedFaces(Mat &frame, Mat &result, vector<Rect> &faces, P
 
             //try to recognize the face
             pr.recognize(face_img, label, confidence);
-            cout << "Recognize with confidence: " << confidence << "and id: " << label << endl;
+            cout << "Recognize with confidence: " << confidence << " and id: " << label << endl;
             if (confidence < RECOGNIZE_THRESHOLD) {
                 color = MATCH_COLOR;
             }
