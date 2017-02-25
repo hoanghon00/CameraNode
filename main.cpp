@@ -103,7 +103,13 @@ static void processDetectedFaces(Mat &frame, Mat &result, vector<Rect> &faces, P
             //draw detection image
             Point center( faces[i].x + faces[i].width*0.5, faces[i].y + faces[i].height*0.5 );
             ellipse( result, center, Size( faces[i].width*0.5, faces[i].height*0.5), 0, 0, 360, color, 4, 8, 0 );
-			putText(result, "Hello", Point( faces[i].x, faces[i].y), FONT_HERSHEY_SIMPLEX, 1, color);
+            string show_text;
+            if ( label != -1 ) {
+				show_text = "ID = " + to_string(label) + ", conf = " + to_string((int)confidence);
+			} else {
+				show_text = "Unknowed";
+			}
+			putText(result, show_text, Point( faces[i].x, faces[i].y), FONT_HERSHEY_SIMPLEX, 1, color, 2);
         }
     }
 }
