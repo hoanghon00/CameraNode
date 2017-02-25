@@ -27,6 +27,7 @@ tmpfs       /mnt/RAM_disk tmpfs   nodev,nosuid,noexec,nodiratime,size=2M   0 0
 Link all resources to /opt directory
 ```
 $ sudo ln -sf <absolute_link_to_resource_dir> /opt/CameraNode
+$ sudo ln -sf <abs_path_to_CameraNode_execute_file> /opt/CameraNode/CameraNode
 ```
 Export the location of face cascade, nose cascade and person training csv file path in resource folder.
 ```
@@ -53,8 +54,8 @@ $ sudo systemctl enable mjpg-streamerd
 ```
 $ sudo mkdir /etc/CameraNode
 $ sudo cp CameraNode.conf /etc/CameraNode/CameraNode.conf
-$ sudo cp camera-node.service /usr/lib/systemd/user/camera-node.service
+$ sudo cp camera-node.service /etc/systemd/system
 $ sudo systemctl daemon-reload
-$ systemctl --user start camera-node
-$ systemctl --user enable camera-node
+$ systemctl start camera-node
+$ systemctl enable camera-node
 ```
