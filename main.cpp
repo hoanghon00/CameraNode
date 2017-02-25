@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <chrono>
 #include <opencv2/opencv.hpp>
 
 #include "defs.h"
@@ -10,6 +11,7 @@
 #include "pedestrian_detection.h"
 
 using namespace std;
+using namespace std::chrono;
 using namespace cv;
 
 /*Function declaration*/
@@ -47,12 +49,18 @@ int main(int argc, char *argv[])
         /* Clone the current frame */
         original = frame.clone();
 
+		high_resolution_clock::time_point tp_start = high_resolution_clock::now();
 		/* Detect face */
 		fd.detectFaces(frame, faces);
+		high_resolution_clock::time_point tp_end_detect = high_resolution_clock::now();
 		processDetectedFaces(frame, original, faces, pr, nd);
-
-        /* Show the result and write out the for streamer */
-        VideoWriter outStream(OUT_FILE, OUT_FOURCC, OUT_FPS, original.size());
+		high_resolution_clock::time_point tp_end_reg = high_resolution_clock::now();
+		duration<double, milli> detect_duration = tp_end_detect - tp_start;
+		auto reg_duration = duration_cast<microseconds>( tp_end_reg - tp_end_detect ).count();
+		auto total_duration = duration_cast<microseconds>( tp_end_reg - tp_start ).count();
+		cout << "Dectect duration = " << detect_duration.count() << " ms, Reg duration = " << reg_duration << ", total duration = " << total_duration << endl;
+		/* Show the result and write out the for streamer */
+		VideoWriter outStream(OUT_FILE, OUT_FOURCC, OUT_FPS, original.size());
 		if (outStream.isOpened()) {
 			outStream.write(original);
 		} else {
