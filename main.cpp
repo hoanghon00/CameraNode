@@ -56,9 +56,10 @@ int main(int argc, char *argv[])
 		processDetectedFaces(frame, original, faces, pr, nd);
 		high_resolution_clock::time_point tp_end_reg = high_resolution_clock::now();
 		duration<double, milli> detect_duration = tp_end_detect - tp_start;
-		auto reg_duration = duration_cast<microseconds>( tp_end_reg - tp_end_detect ).count();
-		auto total_duration = duration_cast<microseconds>( tp_end_reg - tp_start ).count();
-		cout << "Dectect duration = " << detect_duration.count() << " ms, Reg duration = " << reg_duration << ", total duration = " << total_duration << endl;
+		duration<double, milli> reg_duration = tp_end_reg - tp_end_detect;
+		duration<double, milli> total_duration = tp_end_reg - tp_start;
+		cout << "Dectect duration = " << detect_duration.count() << " ms, Reg duration = " \
+		<< reg_duration.count() << ", total duration = " << total_duration.count() << endl;
 		/* Show the result and write out the for streamer */
 		VideoWriter outStream(OUT_FILE, OUT_FOURCC, OUT_FPS, original.size());
 		if (outStream.isOpened()) {
