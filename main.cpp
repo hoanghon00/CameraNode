@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <chrono>
+#include <thread>
 #include <opencv2/opencv.hpp>
 
 #include "defs.h"
@@ -44,27 +45,66 @@ int main(int argc, char *argv[])
     Mat frame, original;
     vector<Rect> faces;
 
+    Mat frame_first, frame_tmp, frame_delta, thresh;
+    vector<vector<Point> > contours;
+	vector<Vec4i> hierarchy;
+	bool is_face_detected;
+
     for(;;) {
         cap >> frame;
         /* Clone the current frame */
         original = frame.clone();
 
-		high_resolution_clock::time_point tp_start = high_resolution_clock::now();
-		/* Detect face */
-		fd.detectFaces(frame, faces);
-		high_resolution_clock::time_point tp_end_detect = high_resolution_clock::now();
-		processDetectedFaces(frame, original, faces, pr, nd);
-		high_resolution_clock::time_point tp_end_reg = high_resolution_clock::now();
-		duration<double, milli> detect_duration = tp_end_detect - tp_start;
-		auto reg_duration = duration_cast<microseconds>( tp_end_reg - tp_end_detect ).count();
-		auto total_duration = duration_cast<microseconds>( tp_end_reg - tp_start ).count();
-		cout << "Dectect duration = " << detect_duration.count() << " ms, Reg duration = " << reg_duration << ", total duration = " << total_duration << endl;
-		/* Show the result and write out the for streamer */
-		VideoWriter outStream(OUT_FILE, OUT_FOURCC, OUT_FPS, original.size());
-		if (outStream.isOpened()) {
-			outStream.write(original);
+		/*Motion detection*/
+		bool is_motion_detected = false;
+		resize(frame, frame_tmp, Size(), 0.5, 0.5, INTER_AREA);
+		cvtColor( frame_tmp, frame_tmp, CV_BGR2GRAY );
+		GaussianBlur( frame_tmp, frame_tmp, Size(21, 21), 0);
+		if ( frame_first.data == NULL ) {
+			cout << "Initialize first frame for motion detection" << endl;
+			frame_first = frame_tmp.clone();
 		} else {
-			cout << "Cannot write to file" << endl;
+			absdiff(frame_first, frame_tmp, frame_delta);
+			threshold(frame_delta, thresh, 25, 255, THRESH_BINARY);
+			dilate(thresh, thresh, Mat(), Point(-1,-1), 2);
+			findContours( thresh, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
+			for( size_t contourIdx = 0; contourIdx < contours.size(); contourIdx++ ) {
+				double area = contourArea(contours[contourIdx]);
+				if (area < 500 ) continue;
+				cout << "Motion detected! Contour area = " << area << endl;
+				is_motion_detected = true;
+				break;
+			}
+		}
+
+		if (is_motion_detected) {
+			high_resolution_clock::time_point tp_start = high_resolution_clock::now();
+			/* Detect face */
+			fd.detectFaces(frame, faces);
+			if (faces.size() > 0) {
+				cout << "Face detected!" << endl;
+				is_face_detected = true;
+			} else {
+				is_face_detected = false;
+			}
+
+			high_resolution_clock::time_point tp_end_detect = high_resolution_clock::now();
+			processDetectedFaces(frame, original, faces, pr, nd);
+			high_resolution_clock::time_point tp_end_reg = high_resolution_clock::now();
+			duration<double, milli> detect_duration = tp_end_detect - tp_start;
+			auto reg_duration = duration_cast<microseconds>( tp_end_reg - tp_end_detect ).count();
+			auto total_duration = duration_cast<microseconds>( tp_end_reg - tp_start ).count();
+			cout << "Dectect duration = " << detect_duration.count() \
+			<< " ms, Reg duration = " << reg_duration << ", total duration = " \
+			<< total_duration << endl;
+
+			/* Show the result and write out the for streamer */
+			VideoWriter outStream(OUT_FILE, OUT_FOURCC, OUT_FPS, original.size());
+			if (outStream.isOpened()) {
+				outStream.write(original);
+			} else {
+				cout << "Cannot write to file" << endl;
+			}
 		}
 #if APP_CONFIG_HOST_DISPLAY
 		imshow("Camera Node", original);
@@ -74,6 +114,18 @@ int main(int argc, char *argv[])
         if(key == 27)
             break;
 #endif
+		/*Enter idle mode*/
+		if ( !is_motion_detected ) {
+			cout << "Sleep 300ms" << endl;
+			milliseconds timespan(300);
+			std::this_thread::sleep_for(timespan);
+		} else {
+			if ( ! is_face_detected ) {
+				cout << "Sleep 100ms" << endl;
+				milliseconds timespan(100);
+				std::this_thread::sleep_for(timespan);
+			}
+		}
     }
     return 0;
 }
