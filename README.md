@@ -56,6 +56,6 @@ $ sudo mkdir /etc/CameraNode
 $ sudo cp CameraNode.conf /etc/CameraNode/CameraNode.conf
 $ sudo cp camera-node.service /etc/systemd/system
 $ sudo systemctl daemon-reload
-$ systemctl start camera-node
-$ systemctl enable camera-node
+$ sudo systemctl start camera-node
+$ sudo systemctl enable camera-node
 ```
